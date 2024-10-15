@@ -1,0 +1,13 @@
+# Cleaner
+cleaner
+cleaner-*
+
+# Local build
+build
+
+# Test-Project
+test_project
+cleaned_source.txt
+
+# Mac OS
+.DS_Store

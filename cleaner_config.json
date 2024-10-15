@@ -1,0 +1,15 @@
+{
+    "directories_to_remove": [
+        "node_modules",
+        "dist",
+        "build",
+        "bin",
+        ".next",
+        ".turbo",
+        ".idea",
+        ".cache"
+    ],
+    "file_extensions_to_remove": [".DS_Store", "__debug_bin"],
+    "exclude_directories": [".git", ".svn"],
+    "exclude_files": []
+}
