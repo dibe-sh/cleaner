@@ -61,7 +61,7 @@ Download cleaner-windows-amd64.exe and run it directly.
 
 ### Build from Source
 
-If you prefer to build Cleaner from source, ensure you have Go installed (version 1.16 or later).
+If you prefer to build Cleaner from source, ensure you have Go installed (version 1.20 or later).
 
 Steps:
 
