@@ -11,3 +11,5 @@ cleaned_source.txt
 
 # Mac OS
 .DS_Store
+
+dist/
