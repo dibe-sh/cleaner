@@ -12,14 +12,7 @@ permissions:
 
 jobs:
     test:
-        runs-on: ${{ matrix.os }}
-        strategy:
-            matrix:
-                go-version: [1.20] # Updated Go version
-                os: [windows-latest, macos-latest, ubuntu-latest]
-                exclude:
-                    - os: windows-latest
-                      # Exclude combinations that are not supported
+        runs-on: ubuntu-latest
         steps:
             - name: Checkout code
               uses: actions/checkout@v3
@@ -27,24 +20,23 @@ jobs:
             - name: Set up Go
               uses: actions/setup-go@v4
               with:
-                  go-version: ${{ matrix.go-version }}
+                  go-version: 1.20
 
             - name: Run Tests
               run: go test -v ./...
 
     build:
-        runs-on: ubuntu-latest
         needs: test
+        runs-on: ubuntu-latest
         strategy:
             matrix:
-                go-version: [1.20]
                 goos: [linux, windows, darwin]
                 goarch: [amd64, arm64]
                 exclude:
                     - goos: windows
-                      goarch: arm64 # Windows ARM64 cross-compilation may have issues
+                      goarch: arm64 # Exclude unsupported combinations
                     - goos: darwin
-                      goarch: arm64 # Cross-compiling darwin/arm64 on linux requires extra setup
+                      goarch: arm64 # Cross-compiling darwin/arm64 requires macOS runner or extra setup
         steps:
             - name: Checkout code
               uses: actions/checkout@v3
@@ -52,7 +44,7 @@ jobs:
             - name: Set up Go
               uses: actions/setup-go@v4
               with:
-                  go-version: ${{ matrix.go-version }}
+                  go-version: 1.20
 
             - name: Build binary
               run: |
