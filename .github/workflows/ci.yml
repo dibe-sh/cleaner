@@ -1,102 +1,94 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-  workflow_dispatch:
+    push:
+        branches:
+            - main
+    pull_request:
+    workflow_dispatch:
+
+permissions:
+    contents: write # Grant write permissions to GITHUB_TOKEN
 
 jobs:
-  test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        go-version: [1.16]
-        os: [windows-latest, macos-latest, ubuntu-latest]
-        arch: [amd64, arm64]
-        include:
-          - os: windows-latest
-            arch: amd64
-          - os: macos-latest
-            arch: amd64
-          - os: macos-latest
-            arch: arm64
-          - os: ubuntu-latest
-            arch: amd64
-          - os: ubuntu-latest
-            arch: arm64
+    test:
+        runs-on: ${{ matrix.os }}
+        strategy:
+            matrix:
+                go-version: [1.16]
+                os: [windows-latest, macos-latest, ubuntu-latest]
+                arch: [amd64, arm64]
+                exclude:
+                    - os: windows-latest
+                      arch: arm64 # Exclude Windows ARM64 as it's not commonly supported
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3 # Updated to v3
 
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: ${{ matrix.go-version }}
+            - name: Set up Go
+              uses: actions/setup-go@v4 # Updated to v4
+              with:
+                  go-version: ${{ matrix.go-version }}
 
-      - name: Install Go for ARM64 (Linux)
-        if: ${{ matrix.arch == 'arm64' && matrix.os == 'ubuntu-latest' }}
-        run: |
-          sudo rm -rf /usr/local/go
-          curl -L https://golang.org/dl/go1.16.linux-arm64.tar.gz | sudo tar -C /usr/local -xz
-          echo "/usr/local/go/bin" >> $GITHUB_PATH
+            - name: Install Go for ARM64 (Linux)
+              if: ${{ matrix.arch == 'arm64' && matrix.os == 'ubuntu-latest' }}
+              run: |
+                  sudo rm -rf /usr/local/go
+                  curl -L https://golang.org/dl/go1.16.linux-arm64.tar.gz | sudo tar -C /usr/local -xz
+                  echo "/usr/local/go/bin" >> $GITHUB_PATH
 
-      - name: Set environment variables
-        run: |
-          echo "GOARCH=${{ matrix.arch }}" >> $GITHUB_ENV
-          if [[ "${{ matrix.os }}" == 'windows-latest' ]]; then
-            echo "GOOS=windows" >> $GITHUB_ENV
-            echo "EXT=.exe" >> $GITHUB_ENV
-          elif [[ "${{ matrix.os }}" == 'macos-latest' ]]; then
-            echo "GOOS=darwin" >> $GITHUB_ENV
-            echo "EXT=" >> $GITHUB_ENV
-          else
-            echo "GOOS=linux" >> $GITHUB_ENV
-            echo "EXT=" >> $GITHUB_ENV
-          fi
+            - name: Set environment variables
+              run: |
+                  echo "GOARCH=${{ matrix.arch }}" >> $GITHUB_ENV
+                  if [[ "${{ matrix.os }}" == 'windows-latest' ]]; then
+                    echo "GOOS=windows" >> $GITHUB_ENV
+                    echo "EXT=.exe" >> $GITHUB_ENV
+                  elif [[ "${{ matrix.os }}" == 'macos-latest' ]]; then
+                    echo "GOOS=darwin" >> $GITHUB_ENV
+                    echo "EXT=" >> $GITHUB_ENV
+                  else
+                    echo "GOOS=linux" >> $GITHUB_ENV
+                    echo "EXT=" >> $GITHUB_ENV
+                  fi
 
-      - name: Run Tests
-        run: |
-          GOOS=${{ env.GOOS }} GOARCH=${{ env.GOARCH }} go test -v ./...
+            - name: Run Tests
+              run: |
+                  go test -v ./...
 
-      - name: Build binary
-        run: |
-          mkdir -p build
-          GOOS=${{ env.GOOS }} GOARCH=${{ env.GOARCH }} go build -ldflags="-s -w" -o build/cleaner-${{ env.GOOS }}-${{ env.GOARCH }}${{ env.EXT }}
+            - name: Build binary
+              run: |
+                  mkdir -p build
+                  GOOS=${{ env.GOOS }} GOARCH=${{ env.GOARCH }} go build -ldflags="-s -w" -o build/cleaner-${{ env.GOOS }}-${{ env.GOARCH }}${{ env.EXT }}
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: cleaner-${{ matrix.os }}-${{ matrix.arch }}
-          path: build/*
+            - name: Upload artifact
+              uses: actions/upload-artifact@v3 # Updated to v3
+              with:
+                  name: build
+                  path: build/*
 
-  release:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v2
-        with:
-          path: ./build
+    release:
+        needs: test
+        runs-on: ubuntu-latest
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3 # Updated to v3
 
-      - name: Upload Release Assets
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./build/*
-          asset_name: ""
-          tag: ${{ github.ref }}
+            - name: Download artifacts
+              uses: actions/download-artifact@v3 # Updated to v3
+              with:
+                  name: build
+                  path: ./build
+
+            - name: Create Release
+              uses: ncipollo/release-action@v1 # Replaced deprecated action
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  tag: ${{ github.ref_name }}
+                  name: Release ${{ github.ref_name }}
+                  body: |
+                      Automated release for ${{ github.ref_name }}
+                  artifacts: |
+                      ./build/*
