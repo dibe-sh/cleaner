@@ -8,7 +8,7 @@ before:
 
 builds:
   - id: default
-    main: ./cmd/cleaner/main.go
+    main: ./main.go
     binary: cleaner
     goos:
       - linux
