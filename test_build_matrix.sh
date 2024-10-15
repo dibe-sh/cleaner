@@ -2,7 +2,7 @@
 
 set -e
 
-GO_VERSIONS=("1.16")
+GO_VERSIONS=("1.20")
 OS_LIST=("windows" "darwin" "linux")
 ARCH_LIST=("amd64" "arm64")
 

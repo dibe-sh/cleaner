@@ -15,28 +15,23 @@ jobs:
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
-                go-version: [1.16]
+                go-version: [1.20] # Updated Go version
                 os: [windows-latest, macos-latest, ubuntu-latest]
                 arch: [amd64, arm64]
                 exclude:
                     - os: windows-latest
                       arch: arm64 # Exclude Windows ARM64 as it's not commonly supported
+                    - os: windows-latest
+                      go-version: 1.16 # Exclude Go 1.16 on Windows
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v3 # Updated to v3
+              uses: actions/checkout@v3
 
             - name: Set up Go
-              uses: actions/setup-go@v4 # Updated to v4
+              uses: actions/setup-go@v4
               with:
                   go-version: ${{ matrix.go-version }}
-
-            - name: Install Go for ARM64 (Linux)
-              if: ${{ matrix.arch == 'arm64' && matrix.os == 'ubuntu-latest' }}
-              run: |
-                  sudo rm -rf /usr/local/go
-                  curl -L https://golang.org/dl/go1.16.linux-arm64.tar.gz | sudo tar -C /usr/local -xz
-                  echo "/usr/local/go/bin" >> $GITHUB_PATH
 
             - name: Set environment variables
               run: |
@@ -59,10 +54,10 @@ jobs:
             - name: Build binary
               run: |
                   mkdir -p build
-                  GOOS=${{ env.GOOS }} GOARCH=${{ env.GOARCH }} go build -ldflags="-s -w" -o build/cleaner-${{ env.GOOS }}-${{ env.GOARCH }}${{ env.EXT }}
+                  GOOS=${{ env.GOOS }} GOARCH=${{ matrix.arch }} go build -ldflags="-s -w" -o build/cleaner-${{ env.GOOS }}-${{ matrix.arch }}${{ env.EXT }}
 
             - name: Upload artifact
-              uses: actions/upload-artifact@v3 # Updated to v3
+              uses: actions/upload-artifact@v3
               with:
                   name: build
                   path: build/*
@@ -74,16 +69,16 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v3 # Updated to v3
+              uses: actions/checkout@v3
 
             - name: Download artifacts
-              uses: actions/download-artifact@v3 # Updated to v3
+              uses: actions/download-artifact@v3
               with:
                   name: build
                   path: ./build
 
             - name: Create Release
-              uses: ncipollo/release-action@v1 # Replaced deprecated action
+              uses: ncipollo/release-action@v1
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
                   tag: ${{ github.ref_name }}
