@@ -59,11 +59,21 @@ func main() {
 	var logMutex sync.Mutex
 	var consoleMutex sync.Mutex
 
+	var totalSize int64
+	var totalSizeMutex sync.Mutex
+	var paths []string
+
 	wg.Add(1)
-	go walkDir(*rootDir, config, *verbose, *dryRun, *logFormat, &wg, semaphore, logger, &logMutex, &consoleMutex)
+	go walkDir(*rootDir, config, *verbose, *dryRun, *logFormat, &wg, semaphore, logger, &logMutex, &consoleMutex, &totalSize, &totalSizeMutex, &paths)
 
 	wg.Wait()
-	fmt.Println("Cleaning process completed.")
+
+	if *dryRun {
+		fmt.Printf("Total cleanable size: %.2f MB\n", float64(totalSize)/(1024*1024))
+		fmt.Println("Paths that would be removed:", paths)
+	} else {
+		fmt.Println("Cleaning process completed.")
+	}
 }
 
 func getDefaultConfig() *Config {
@@ -102,7 +112,19 @@ func loadConfig(configPath string) (*Config, error) {
 	return &config, nil
 }
 
-func walkDir(dir string, config *Config, verbose, dryRun bool, logFormat string, wg *sync.WaitGroup, semaphore chan struct{}, logger *log.Logger, logMutex, consoleMutex *sync.Mutex) {
+func walkDir(
+	dir string,
+	config *Config,
+	verbose, dryRun bool,
+	logFormat string,
+	wg *sync.WaitGroup,
+	semaphore chan struct{},
+	logger *log.Logger,
+	logMutex, consoleMutex *sync.Mutex,
+	totalSize *int64,
+	totalSizeMutex *sync.Mutex,
+	paths *[]string, // New parameter to collect paths during dry-run
+) {
 	defer wg.Done()
 
 	semaphore <- struct{}{}
@@ -126,13 +148,22 @@ func walkDir(dir string, config *Config, verbose, dryRun bool, logFormat string,
 			}
 
 			if shouldRemoveDir(entryName, config.DirectoriesToRemove) {
-				if verbose {
-					consoleMutex.Lock()
-					fmt.Printf("Detected directory to remove: %s\n", entryPath)
-					consoleMutex.Unlock()
-				}
+				dirSize := calculateSize(entryPath)
+				totalSizeMutex.Lock()
+				*totalSize += dirSize
+				totalSizeMutex.Unlock()
 
-				if !dryRun {
+				if dryRun {
+					if verbose {
+						consoleMutex.Lock()
+						fmt.Printf("[Dry Run] Would remove directory: %s (Size: %.2f MB)\n", entryPath, float64(dirSize)/(1024*1024))
+						consoleMutex.Unlock()
+					}
+					*paths = append(*paths, entryPath)
+					if logger != nil {
+						logEntry(logger, logMutex, logFormat, "[Dry Run] Would remove directory", entryPath)
+					}
+				} else {
 					err := os.RemoveAll(entryPath)
 					if err != nil {
 						consoleMutex.Lock()
@@ -141,12 +172,10 @@ func walkDir(dir string, config *Config, verbose, dryRun bool, logFormat string,
 					} else if logger != nil {
 						logEntry(logger, logMutex, logFormat, "Removed directory", entryPath)
 					}
-				} else if logger != nil {
-					logEntry(logger, logMutex, logFormat, "[Dry Run] Would remove directory", entryPath)
 				}
 			} else {
 				wg.Add(1)
-				go walkDir(entryPath, config, verbose, dryRun, logFormat, wg, semaphore, logger, logMutex, consoleMutex)
+				go walkDir(entryPath, config, verbose, dryRun, logFormat, wg, semaphore, logger, logMutex, consoleMutex, totalSize, totalSizeMutex, paths)
 			}
 		} else {
 			if isExcluded(entryName, config.ExcludeFiles) {
@@ -154,13 +183,22 @@ func walkDir(dir string, config *Config, verbose, dryRun bool, logFormat string,
 			}
 
 			if shouldRemoveFile(entryName, config.FileExtensionsToRemove, config.MatchRegex) {
-				if verbose {
-					consoleMutex.Lock()
-					fmt.Printf("Detected file to remove: %s\n", entryPath)
-					consoleMutex.Unlock()
-				}
+				fileSize := calculateSize(entryPath)
+				totalSizeMutex.Lock()
+				*totalSize += fileSize
+				totalSizeMutex.Unlock()
 
-				if !dryRun {
+				if dryRun {
+					if verbose {
+						consoleMutex.Lock()
+						fmt.Printf("[Dry Run] Would remove file: %s (Size: %.2f KB)\n", entryPath, float64(fileSize)/1024)
+						consoleMutex.Unlock()
+					}
+					*paths = append(*paths, entryPath)
+					if logger != nil {
+						logEntry(logger, logMutex, logFormat, "[Dry Run] Would remove file", entryPath)
+					}
+				} else {
 					err := os.Remove(entryPath)
 					if err != nil {
 						consoleMutex.Lock()
@@ -169,12 +207,21 @@ func walkDir(dir string, config *Config, verbose, dryRun bool, logFormat string,
 					} else if logger != nil {
 						logEntry(logger, logMutex, logFormat, "Removed file", entryPath)
 					}
-				} else if logger != nil {
-					logEntry(logger, logMutex, logFormat, "[Dry Run] Would remove file", entryPath)
 				}
 			}
 		}
 	}
+}
+
+func calculateSize(path string) int64 {
+	var size int64
+	filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
+		if err == nil && info != nil {
+			size += info.Size()
+		}
+		return nil
+	})
+	return size
 }
 
 func shouldRemoveDir(dirName string, dirsToRemove []string) bool {
