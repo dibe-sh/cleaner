@@ -1,10 +1,12 @@
-remote_theme: "mmistakes/minimal-mistakes"
-plugins:
-  - jekyll-toc
+remote_theme: "just-the-docs/just-the-docs"
 
-toc: true
-toc_label: "Contents"
-toc_icon: "align-left"
-toc_sticky: true
+color_scheme: "dark"
 
-minimal_mistakes_skin: "dark"
+just_the_docs:
+  show_on_navigation: true
+  show_last_modified_date: true
+  show_breadcrumbs: true
+  collapse_level: 2
+  aux_links:
+    "GitHub Repository": https://github.com/dibe-sh/cleaner
+    "Contact Support": mailto:contact@dibe.sh

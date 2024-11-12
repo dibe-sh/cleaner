@@ -1,8 +1,7 @@
 ---
 title: "Cleaner"
-toc: true
-toc_label: "Table of Contents"
-toc_icon: "align-left"
+layout: default
+nav_order: 1  
 ---
 
 # Cleaner

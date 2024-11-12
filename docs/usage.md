@@ -1,8 +1,7 @@
 ---
 title: "Usage Guide"
-toc: true
-toc_label: "Table of Contents"
-toc_icon: "align-left"
+layout: default
+nav_order: 3  
 ---
 
 # Usage Guide
