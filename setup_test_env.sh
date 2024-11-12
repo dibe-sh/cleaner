@@ -13,34 +13,34 @@ mkdir -p .git bin build dist node_modules/module src
 echo "git config" > .git/config
 
 # Create files in bin (should be removed with regex and non-regex patterns)
-echo "binary data" > bin/program.exe
-echo "library data" > bin/helper.dll
-echo "temporary data" > bin/temp_file.log  # Should be removed if matched by regex `temp.*\.log`
-echo "debug info" > bin/debug_info.txt     # Should be removed if matched by regex `debug_.*\.txt`
+dd if=/dev/zero of=bin/program.exe bs=1K count=5   # 5 KB
+dd if=/dev/zero of=bin/helper.dll bs=1K count=3     # 3 KB
+dd if=/dev/zero of=bin/temp_file.log bs=1K count=1  # 1 KB (matches regex `temp.*\.log`)
+dd if=/dev/zero of=bin/debug_info.txt bs=1K count=2 # 2 KB (matches regex `debug_.*\.txt`)
 
 # Create files in build (should be removed)
-echo "object file data" > build/output.o
+dd if=/dev/zero of=build/output.o bs=1K count=4     # 4 KB
 
 # Create files in dist (should be removed)
-echo "app js data" > dist/app.js
+dd if=/dev/zero of=dist/app.js bs=1K count=6        # 6 KB
 
 # Create files in node_modules (should be removed)
-echo "module code" > node_modules/module/index.js
+dd if=/dev/zero of=node_modules/module/index.js bs=1K count=2  # 2 KB
 
 # Create source files (should not be removed)
 echo "package main" > src/main.go
 echo "package main" > src/utils.go
-touch src/.DS_Store  # Should be removed
+dd if=/dev/zero of=src/.DS_Store bs=1K count=1      # 1 KB (should be removed)
 
 # Create root-level files
-echo "ENV variables" > .env  # Should not be removed
-echo "Project documentation" > README.md  # Should not be removed
-touch .DS_Store       # Should be removed
-touch __debug_bin     # Should be removed
-touch ___debug_bin_1100     # Should be removed
-touch app__debug_bin     # Should be removed
-touch tempfile.log    # Should be removed if matched by regex `temp.*\.log`
-touch debug_output.txt # Should be removed if matched by regex `debug_.*\.txt`
+echo "ENV variables" > .env                         # Should not be removed
+echo "Project documentation" > README.md            # Should not be removed
+dd if=/dev/zero of=.DS_Store bs=1K count=1          # 1 KB (should be removed)
+dd if=/dev/zero of=__debug_bin bs=1K count=1        # 1 KB (should be removed)
+dd if=/dev/zero of=___debug_bin_1100 bs=1K count=1  # 1 KB (should be removed)
+dd if=/dev/zero of=app__debug_bin bs=1K count=1     # 1 KB (should be removed)
+dd if=/dev/zero of=tempfile.log bs=1K count=2       # 2 KB (matches regex `temp.*\.log`)
+dd if=/dev/zero of=debug_output.txt bs=1K count=3   # 3 KB (matches regex `debug_.*\.txt`)
 
 # Navigate back to the parent directory
 cd ..
