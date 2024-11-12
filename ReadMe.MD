@@ -191,7 +191,7 @@ Steps to Contribute
 - Push to the branch (git push origin feature/YourFeature).
 - Open a pull request.
 
-Comprehensive documentation is available at [Cleaner App Documentation](https://dibe-sh.github.io/cleaner).
+Comprehensive documentation is available at [Cleaner Documentation](https://dibe-sh.github.io/cleaner).
 
 ## License
 

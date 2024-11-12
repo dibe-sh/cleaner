@@ -1,6 +1,13 @@
+---
+title: "Setup Instructions"
+toc: true
+toc_label: "Table of Contents"
+toc_icon: "align-left"
+---
+
 # Setup Instructions
 
-Follow these steps to set up the Cleaner App on your local machine.
+Follow these steps to set up the Cleaner on your local machine.
 
 ## 1. Clone the Repository
 
@@ -29,7 +36,7 @@ For testing purposes, you can set up a test environment with sample files and di
 
 This script will create a test_project directory with sample files and directories matching the app’s criteria for deletion. It’s useful for testing the app in dry-run mode.
 
-You’re now ready to use the Cleaner App. Head over to the [Usage Guide](./usage.md) to learn how to run the app.
+You’re now ready to use the Cleaner. Head over to the [Usage Guide](./usage.md) to learn how to run the app.
 
 ## Download the Executable
 
@@ -39,4 +46,4 @@ If you prefer to download the executable directly, follow these steps:
 2. Make the executable file executable (e.g., `chmod +x cleaner` on Unix-based systems).
 3. Run the executable from the command line to start cleaning up directories.
 4. Refer to the [Usage Guide](./usage.md) for more details on running the app with different options.
-5. Enjoy a cleaner workspace with the Cleaner App!
+5. Enjoy a cleaner workspace with the Cleaner!

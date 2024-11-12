@@ -1,6 +1,13 @@
+---
+title: "Examples"
+toc: true
+toc_label: "Table of Contents"
+toc_icon: "align-left"
+---
+
 # Examples
 
-These examples show how to use the Cleaner App with different configurations and options.
+These examples show how to use the Cleaner with different configurations and options.
 
 ## Example 1: Basic Directory Cleanup
 
@@ -45,7 +52,7 @@ Suppose you want to remove only .log files and the dist directory, while excludi
 }
 ```
 
-2. Run the Cleaner App with the custom configuration:
+2. Run the Cleaner with the custom configuration:
 
 ```bash
 go run main.go -root=project_directory -verbose=true

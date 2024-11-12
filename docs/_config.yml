@@ -1,2 +1,10 @@
-theme: jekyll-theme-cayman
-markdown: kramdown
+remote_theme: "mmistakes/minimal-mistakes"
+plugins:
+  - jekyll-toc
+
+toc: true
+toc_label: "Contents"
+toc_icon: "align-left"
+toc_sticky: true
+
+minimal_mistakes_skin: "dark"

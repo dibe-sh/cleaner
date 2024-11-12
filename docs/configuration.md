@@ -1,6 +1,13 @@
+---
+title: "Configuration Guide"
+toc: true
+toc_label: "Table of Contents"
+toc_icon: "align-left"
+---
+
 # Configuration Guide
 
-The Cleaner App is highly configurable. You can control which directories and files are deleted by editing the `cleaner_config.json` file.
+The Cleaner is highly configurable. You can control which directories and files are deleted by editing the `cleaner_config.json` file.
 
 Here’s a breakdown of each configuration option:
 
@@ -26,4 +33,4 @@ Explanation of Regex Use
 If matchRegex is enabled, file_extensions_to_remove can contain regex patterns. For example:
  • .temp will match any file that starts with “.temp” just like using `%like%` in SQL.
 
-By customizing this configuration, you can tailor the Cleaner App to specific project needs.
+By customizing this configuration, you can tailor the Cleaner to specific project needs.

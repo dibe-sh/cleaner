@@ -1,6 +1,13 @@
-# Cleaner App Documentation
+---
+title: "Cleaner"
+toc: true
+toc_label: "Table of Contents"
+toc_icon: "align-left"
+---
 
-Welcome to the Cleaner App documentation! The Cleaner App is a utility designed to help you automate the cleanup of files and directories that match specific criteria, making it easy to keep your project directories organized.
+# Cleaner
+
+Welcome to the Cleaner documentation! The Cleaner is a utility designed to help you automate the cleanup of files and directories that match specific criteria, making it easy to keep your project directories organized.
 
 This app supports:
 
@@ -16,4 +23,4 @@ This app supports:
 - [Configuration Guide](configuration.md): Configuration options to customize cleanup behavior.
 - [Examples](examples.md): Practical examples to get you started quickly.
 
-Explore each section for detailed information on setting up and using the Cleaner App.
+Explore each section for detailed information on setting up and using the Cleaner.

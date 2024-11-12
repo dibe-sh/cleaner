@@ -1,10 +1,17 @@
+---
+title: "Usage Guide"
+toc: true
+toc_label: "Table of Contents"
+toc_icon: "align-left"
+---
+
 # Usage Guide
 
-This guide provides details on how to run the Cleaner App, including examples for basic use and specific options.
+This guide provides details on how to run the Cleaner, including examples for basic use and specific options.
 
 ## Basic Usage
 
-To clean up a directory using the Cleaner App, use the `-root` option to specify the target directory:
+To clean up a directory using the Cleaner, use the `-root` option to specify the target directory:
 
 ```bash
 go run main.go -root=<directory> -verbose=true
@@ -32,7 +39,7 @@ This command will:
 
 ## Logging Output
 
-The Cleaner App provides detailed logging to track the cleanup process. By default, logs are displayed in the console. To save logs to a file, use the `-log-file` option:
+The Cleaner provides detailed logging to track the cleanup process. By default, logs are displayed in the console. To save logs to a file, use the `-log-file` option:
 
 ```bash
 go run main.go -root=<directory> -save-log=true -log-format=text
@@ -44,7 +51,7 @@ Options for log-format:
 
 ## Options
 
-The Cleaner App provides several options to customize the cleanup process. Here are some common options:
+The Cleaner provides several options to customize the cleanup process. Here are some common options:
 
 - **`-root`**: Specifies the root directory to clean up.
 - **`-verbose`**: Enables detailed logging for each action.
