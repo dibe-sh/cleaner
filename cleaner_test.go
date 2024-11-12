@@ -25,21 +25,28 @@ func TestShouldRemoveDir(t *testing.T) {
 }
 
 func TestShouldRemoveFile(t *testing.T) {
-	extensionsToRemove := []string{".exe", ".dll", ".tmp"}
-
 	tests := []struct {
-		fileName string
-		want     bool
+		fileName   string
+		extensions []string
+		matchRegex bool
+		want       bool
 	}{
-		{"program.exe", true},
-		{"tempfile.tmp", true},
-		{"document.txt", false},
+		// Non-regex cases
+		{"program.exe", []string{".exe", ".dll", ".tmp"}, false, true},
+		{"tempfile.tmp", []string{".exe", ".dll", ".tmp"}, false, true},
+		{"document.txt", []string{".exe", ".dll", ".tmp"}, false, false},
+
+		// Regex cases
+		{"tempfile.log", []string{`temp.*\.log`}, true, true},
+		{"logfile.log", []string{`temp.*\.log`}, true, false},
+		{"debug_info.txt", []string{`debug_.*\.txt`}, true, true},
+		{"info.txt", []string{`debug_.*\.txt`}, true, false},
 	}
 
 	for _, tt := range tests {
-		got := shouldRemoveFile(tt.fileName, extensionsToRemove)
+		got := shouldRemoveFile(tt.fileName, tt.extensions, tt.matchRegex)
 		if got != tt.want {
-			t.Errorf("shouldRemoveFile(%q) = %v; want %v", tt.fileName, got, tt.want)
+			t.Errorf("shouldRemoveFile(%q, %v, %v) = %v; want %v", tt.fileName, tt.extensions, tt.matchRegex, got, tt.want)
 		}
 	}
 }
@@ -65,7 +72,6 @@ func TestIsExcluded(t *testing.T) {
 }
 
 func TestLoadConfig(t *testing.T) {
-	// Since we're not using files, we'll test getDefaultConfig instead
 	config := getDefaultConfig()
 
 	if len(config.DirectoriesToRemove) == 0 {
