@@ -123,7 +123,8 @@ Cleaner uses a JSON configuration file to specify which directories and files to
     ],
     "file_extensions_to_remove": [".DS_Store", "__debug_bin"],
     "exclude_directories": [".git", ".svn"],
-    "exclude_files": []
+    "exclude_files": [],
+    "matchRegex": true
 }
 ```
 

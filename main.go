@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"sync"
@@ -18,10 +19,10 @@ type Config struct {
 	FileExtensionsToRemove []string `json:"file_extensions_to_remove"`
 	ExcludeDirectories     []string `json:"exclude_directories"`
 	ExcludeFiles           []string `json:"exclude_files"`
+	MatchRegex             bool     `json:"matchRegex"`
 }
 
 func main() {
-	// Parse command-line arguments
 	rootDir := flag.String("root", ".", "Root directory to scan")
 	configFile := flag.String("config", "cleaner_config.json", "Path to the JSON configuration file")
 	verbose := flag.Bool("verbose", true, "Enable verbose console output")
@@ -30,12 +31,10 @@ func main() {
 	logFormat := flag.String("log-format", "text", "Log format: 'text' or 'json'")
 	flag.Parse()
 
-	// Check if the root directory exists
 	if _, err := os.Stat(*rootDir); os.IsNotExist(err) {
 		log.Fatalf("Root directory does not exist: %s\n", *rootDir)
 	}
 
-	// Load configuration
 	config, err := loadConfig(*configFile)
 	if err != nil {
 		fmt.Printf("Warning: %v\n", err)
@@ -43,7 +42,6 @@ func main() {
 		config = getDefaultConfig()
 	}
 
-	// Initialize logger
 	var logger *log.Logger
 	if *saveLog {
 		logFile := "cleaned_source.txt"
@@ -52,21 +50,18 @@ func main() {
 			log.Fatalf("Failed to open log file: %v", err)
 		}
 		defer f.Close()
-		logger = log.New(f, "", 0) // Use custom log format
+		logger = log.New(f, "", 0)
 	}
 
-	// Create a WaitGroup and a semaphore for concurrency control
 	var wg sync.WaitGroup
 	maxGoroutines := runtime.NumCPU()
 	semaphore := make(chan struct{}, maxGoroutines)
 	var logMutex sync.Mutex
 	var consoleMutex sync.Mutex
 
-	// Start processing the root directory
 	wg.Add(1)
 	go walkDir(*rootDir, config, *verbose, *dryRun, *logFormat, &wg, semaphore, logger, &logMutex, &consoleMutex)
 
-	// Wait for all goroutines to finish
 	wg.Wait()
 	fmt.Println("Cleaning process completed.")
 }
@@ -86,6 +81,7 @@ func getDefaultConfig() *Config {
 		FileExtensionsToRemove: []string{".DS_Store", "__debug_bin"},
 		ExcludeDirectories:     []string{".git", ".svn"},
 		ExcludeFiles:           []string{},
+		MatchRegex:             true,
 	}
 }
 
@@ -109,11 +105,9 @@ func loadConfig(configPath string) (*Config, error) {
 func walkDir(dir string, config *Config, verbose, dryRun bool, logFormat string, wg *sync.WaitGroup, semaphore chan struct{}, logger *log.Logger, logMutex, consoleMutex *sync.Mutex) {
 	defer wg.Done()
 
-	// Acquire a semaphore slot
 	semaphore <- struct{}{}
 	defer func() { <-semaphore }()
 
-	// Read directory entries
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		consoleMutex.Lock()
@@ -127,115 +121,56 @@ func walkDir(dir string, config *Config, verbose, dryRun bool, logFormat string,
 		entryPath := filepath.Join(dir, entryName)
 
 		if entry.IsDir() {
-			// Check for exclusion
 			if isExcluded(entryName, config.ExcludeDirectories) {
 				continue
 			}
 
-			// Check if the directory should be removed
 			if shouldRemoveDir(entryName, config.DirectoriesToRemove) {
-				// Log detection
 				if verbose {
 					consoleMutex.Lock()
 					fmt.Printf("Detected directory to remove: %s\n", entryPath)
 					consoleMutex.Unlock()
 				}
 
-				// Log starting cleaning
-				if verbose {
-					consoleMutex.Lock()
-					fmt.Printf("Cleaning directory: %s\n", entryPath)
-					consoleMutex.Unlock()
-				}
-
 				if !dryRun {
-					// Remove the directory
 					err := os.RemoveAll(entryPath)
 					if err != nil {
 						consoleMutex.Lock()
 						fmt.Fprintf(os.Stderr, "Failed to remove directory %s: %v\n", entryPath, err)
 						consoleMutex.Unlock()
-					} else {
-						// Log completion
-						if verbose {
-							consoleMutex.Lock()
-							fmt.Printf("Completed cleaning directory: %s\n", entryPath)
-							consoleMutex.Unlock()
-						}
-
-						// Log the path of the removed directory
-						if logger != nil {
-							logEntry(logger, logMutex, logFormat, "Removed directory", entryPath)
-						}
+					} else if logger != nil {
+						logEntry(logger, logMutex, logFormat, "Removed directory", entryPath)
 					}
-				} else {
-					// Dry-run mode: simulate removal
-					if verbose {
-						consoleMutex.Lock()
-						fmt.Printf("[Dry Run] Would remove directory: %s\n", entryPath)
-						consoleMutex.Unlock()
-					}
-					if logger != nil {
-						logEntry(logger, logMutex, logFormat, "[Dry Run] Would remove directory", entryPath)
-					}
+				} else if logger != nil {
+					logEntry(logger, logMutex, logFormat, "[Dry Run] Would remove directory", entryPath)
 				}
 			} else {
-				// Recursively process subdirectories
 				wg.Add(1)
 				go walkDir(entryPath, config, verbose, dryRun, logFormat, wg, semaphore, logger, logMutex, consoleMutex)
 			}
 		} else {
-			// Check for exclusion
 			if isExcluded(entryName, config.ExcludeFiles) {
 				continue
 			}
 
-			// Check if the file should be removed
-			if shouldRemoveFile(entryName, config.FileExtensionsToRemove) {
-				// Log detection
+			if shouldRemoveFile(entryName, config.FileExtensionsToRemove, config.MatchRegex) {
 				if verbose {
 					consoleMutex.Lock()
 					fmt.Printf("Detected file to remove: %s\n", entryPath)
 					consoleMutex.Unlock()
 				}
 
-				// Log starting cleaning
-				if verbose {
-					consoleMutex.Lock()
-					fmt.Printf("Cleaning file: %s\n", entryPath)
-					consoleMutex.Unlock()
-				}
-
 				if !dryRun {
-					// Remove the file
 					err := os.Remove(entryPath)
 					if err != nil {
 						consoleMutex.Lock()
 						fmt.Fprintf(os.Stderr, "Failed to remove file %s: %v\n", entryPath, err)
 						consoleMutex.Unlock()
-					} else {
-						// Log completion
-						if verbose {
-							consoleMutex.Lock()
-							fmt.Printf("Completed cleaning file: %s\n", entryPath)
-							consoleMutex.Unlock()
-						}
-
-						// Log the path of the removed file
-						if logger != nil {
-							logEntry(logger, logMutex, logFormat, "Removed file", entryPath)
-						}
+					} else if logger != nil {
+						logEntry(logger, logMutex, logFormat, "Removed file", entryPath)
 					}
-				} else {
-					// Dry-run mode: simulate removal
-					if verbose {
-						consoleMutex.Lock()
-						fmt.Printf("[Dry Run] Would remove file: %s\n", entryPath)
-						consoleMutex.Unlock()
-					}
-					if logger != nil {
-						logEntry(logger, logMutex, logFormat, "[Dry Run] Would remove file", entryPath)
-					}
+				} else if logger != nil {
+					logEntry(logger, logMutex, logFormat, "[Dry Run] Would remove file", entryPath)
 				}
 			}
 		}
@@ -251,10 +186,23 @@ func shouldRemoveDir(dirName string, dirsToRemove []string) bool {
 	return false
 }
 
-func shouldRemoveFile(fileName string, extensions []string) bool {
-	for _, ext := range extensions {
-		if strings.HasSuffix(fileName, ext) {
-			return true
+func shouldRemoveFile(fileName string, extensions []string, matchRegex bool) bool {
+	if matchRegex {
+		for _, pattern := range extensions {
+			matched, err := regexp.MatchString(pattern, fileName)
+			if err != nil {
+				fmt.Printf("Error in regex pattern %s: %v\n", pattern, err)
+				continue
+			}
+			if matched {
+				return true
+			}
+		}
+	} else {
+		for _, ext := range extensions {
+			if strings.HasSuffix(fileName, ext) {
+				return true
+			}
 		}
 	}
 	return false
@@ -278,7 +226,6 @@ func logEntry(logger *log.Logger, logMutex *sync.Mutex, format, action, path str
 		logMessage := fmt.Sprintf(`{"timestamp":"%s","action":"%s","path":"%s"}`, timestamp, action, path)
 		logger.Println(logMessage)
 	} else {
-		// Default to text format
 		logMessage := fmt.Sprintf("%s - %s: %s", timestamp, action, path)
 		logger.Println(logMessage)
 	}
