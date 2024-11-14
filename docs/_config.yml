@@ -21,7 +21,7 @@ back_to_top: true
 back_to_top_text: "Back to top"
 
 # Footer content
-footer_content: 'Copyright © YEAR <a href="https://dibe.sh">Dibesh Raj Subedi</a>'
+footer_content: 'Know more about me? I am <a href="https://dibe.sh">Dibesh Raj Subedi</a>.'
 
 # Auxiliary links
 aux_links:
