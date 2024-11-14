@@ -1,7 +1,9 @@
 ---
 title: "Cleaner"
-layout: default
+layout: home
+description: "Automate the cleanup of files and directories that match specific criteria."
 nav_order: 1  
+permalink: /
 ---
 
 # Cleaner

@@ -1,12 +1,43 @@
-remote_theme: "just-the-docs/just-the-docs"
+title: "Cleaner | Dibesh Raj Subedi"
+description: "A cleaner for developers to clean up their codebase."
+logo: "/favicon.svg"
+baseurl: ""
 
+permalink: pretty
+
+remote_theme: "just-the-docs/just-the-docs"
 color_scheme: "dark"
 
 just_the_docs:
   show_on_navigation: true
   show_last_modified_date: true
-  show_breadcrumbs: true
   collapse_level: 2
-  aux_links:
-    "GitHub Repository": https://github.com/dibe-sh/cleaner
-    "Contact Support": mailto:contact@dibe.sh
+
+favicon: "/favicon.ico"
+theme_color: "#000000" 
+
+# Back to top link
+back_to_top: true
+back_to_top_text: "Back to top"
+
+footer_content: 'Copyright &copy; 2024 <a href="https://dibe.sh">Dibesh Raj Subedi</a>'
+
+aux_links:
+  "Cleaner": 
+    - "https://github.com/dibe-sh/cleaner"
+aux_links_new_tab: false
+
+nav_enabled: true
+
+author:
+  name: "Dibesh Raj Subedi"
+  email: "contact@dibe.sh"
+  github: "https://github.com/dibe-sh"
+  linkedin: "https://linkedin.com/in/itsubedibesh"
+  twitter: "https://twitter.com/itsubedibesh"
+
+plugins:
+  - jekyll-seo-tag
+  - jekyll-github-metadata
+  - jekyll-include-cache
+  - jekyll-sitemap
