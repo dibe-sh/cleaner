@@ -1,7 +1,6 @@
 title: "Cleaner | Dibesh Raj Subedi"
 description: "A cleaner for developers to clean up their codebase."
-logo: "/favicon.svg"
-baseurl: ""
+logo: "{{ site.baseurl }}/favicon.svg"
 
 permalink: pretty
 
@@ -13,7 +12,7 @@ just_the_docs:
   show_last_modified_date: true
   collapse_level: 2
 
-favicon: "/favicon.ico"
+favicon: "{{ site.baseurl }}/favicon.ico"
 theme_color: "#000000" 
 
 # Back to top link
