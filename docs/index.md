@@ -1,5 +1,5 @@
 ---
-title: "Cleaner"
+title: "Home"
 layout: home
 description: "Automate the cleanup of files and directories that match specific criteria."
 nav_order: 1  

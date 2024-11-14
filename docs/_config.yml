@@ -1,9 +1,9 @@
-title: "Cleaner | Dibesh Raj Subedi"
+title: " | Cleaner Docs"
 description: "A cleaner for developers to clean up their codebase."
 logo: "{{ site.baseurl }}/favicon.svg"
-
 permalink: pretty
 
+# Theme settings
 remote_theme: "just-the-docs/just-the-docs"
 color_scheme: "dark"
 
@@ -12,31 +12,47 @@ just_the_docs:
   show_last_modified_date: true
   collapse_level: 2
 
+# Favicon and theme color
 favicon: "{{ site.baseurl }}/favicon.ico"
-theme_color: "#000000" 
+theme_color: "#000000"
 
 # Back to top link
 back_to_top: true
 back_to_top_text: "Back to top"
 
-footer_content: 'Copyright &copy; 2024 <a href="https://dibe.sh">Dibesh Raj Subedi</a>'
+# Footer content
+footer_content: 'Copyright &copy; {{ "now" | date: "%Y" }} <a href="https://dibe.sh">Dibesh Raj Subedi</a>'
 
+# Auxiliary links
 aux_links:
-  "Cleaner": 
+  "Cleaner GitHub":
     - "https://github.com/dibe-sh/cleaner"
 aux_links_new_tab: false
 
+# Navigation settings
 nav_enabled: true
+nav_title: "Table of Contents"
+nav_exclude:
+  - "docs/README.md"
+  - "docs/_config.yml"
+  - "docs/.gitignore"
+  - "docs/.gitattributes"
+  - "docs/LICENSE"
+  - "docs/CONTRIBUTING.md"
+  - "docs/CHANGELOG.md"
+  - "docs/CONTRIBUTORS.md"
+  - "docs/README.md"
 
+# Author information for SEO
 author:
   name: "Dibesh Raj Subedi"
   email: "contact@dibe.sh"
   github: "https://github.com/dibe-sh"
   linkedin: "https://linkedin.com/in/itsubedibesh"
-  twitter: "https://twitter.com/itsubedibesh"
 
+# Plugins
 plugins:
-  - jekyll-seo-tag
-  - jekyll-github-metadata
-  - jekyll-include-cache
-  - jekyll-sitemap
+  - jekyll-seo-tag           # Adds SEO meta tags
+  - jekyll-github-metadata    # Pulls GitHub repo metadata for GitHub Pages
+  - jekyll-include-cache      # Caches include statements
+  - jekyll-sitemap            # Generates a sitemap for SEO
