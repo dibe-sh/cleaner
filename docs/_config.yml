@@ -1,6 +1,7 @@
 title: " | Cleaner Docs"
 description: "A cleaner for developers to clean up their codebase."
-logo: "{{ site.baseurl }}/favicon.svg"
+logo: "/favicon.svg"
+favicon: "/favicon.ico"
 permalink: pretty
 
 # Theme settings
